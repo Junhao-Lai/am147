@@ -1,0 +1,84 @@
+% function pend{
+% switch switch_expression
+%    case case_expression
+%       statements
+%    case case_expression
+%       statements
+%     ...
+%    otherwise
+%       statements
+% end
+% }
+
+function [t, y] = pend(t_intv, ICs, t_step, m1, m2, L1, L2, gv, method)
+    switch method
+        case 'rk'
+            % Runge-Kutta method
+            [t, y] = rungeKutta(t_intv, ICs, t_step, m1, m2, L1, L2, gv);
+        case 'trp'
+            % Trapezoid method
+            [t, y] = trapezoid(t_intv, ICs, t_step, m1, m2, L1, L2, gv);
+        case 'eul'
+            % Call Euler method
+            [t, y] = euler(t_intv, ICs, t_step, m1, m2, L1, L2, gv);
+        otherwise
+            error('Invalid method. Please choose from: ''rk'', ''trp'', or ''eul''.');
+    end
+end
+
+% Define Runge-Kutta method
+function [t, y] = rungeKutta(t_intv, ICs, t_step, m1, m2, L1, L2, gv)
+    % Runge-Kutta implementation
+    % Define the time vector
+    t = linspace(t_intv(1), t_intv(2), t_step);
+
+    % Preallocate memory for the solution
+    y = zeros(length(t), length(ICs));
+
+    % Set the initial conditions
+    y(1, :) = ICs;
+
+    % Define the step size
+    dt = t(2) - t(1);
+
+    % Perform the Runge-Kutta integration
+    for i = 1:length(t)-1
+        k1 = dt * YDOT(t(i), y(i, :), m1, m2, L1, L2, gv);
+        k2 = dt * YDOT(t(i) + dt/2, y(i, :) + k1/2, m1, m2, L1, L2, gv);
+        k3 = dt * YDOT(t(i) + dt/2, y(i, :) + k2/2, m1, m2, L1, L2, gv);
+        k4 = dt * YDOT(t(i) + dt, y(i, :) + k3, m1, m2, L1, L2, gv);
+
+        y(i + 1, :) = y(i, :) + (k1 + 2*k2 + 2*k3 + k4) / 6;
+    end
+end
+
+function [t, y] = trapezoid(t_intv, ICs, t_step, m1, m2, L1, L2, gv)
+    % Trapezoid implementation
+
+    t = linspace(t_intv(1), t_intv(2), t_step);
+
+    % Preallocate memory for the solution
+    y = zeros(length(t), length(ICs));
+
+    % Set the initial conditions
+    y(1, :) = ICs;
+
+    % Define the step size
+    dt = t(2) - t(1);
+
+    % Perform the Trapezoid integration
+    for i = 1:length(t)-1
+        % Predictor step (using Euler's method)
+        y_pred = y(i, :) + dt * YDOT(t(i), y(i, :), m1, m2, L1, L2, gv);
+
+        % Corrector step
+        y(i + 1, :) = y(i, :) + dt / 2 * (YDOT(t(i), y(i, :), m1, m2, L1, L2, gv) + ...
+                      YDOT(t(i + 1), y_pred, m1, m2, L1, L2, gv));
+    end
+
+end
+
+% Define Euler method
+function [t, y] = euler(t_intv, ICs, t_step, m1, m2, L1, L2, gv)
+    %  Euler implementation
+end
